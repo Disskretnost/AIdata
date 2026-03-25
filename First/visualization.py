@@ -3,7 +3,7 @@ import tensorflow
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.utils import get_file
 
-from tensorflow.keras.applications.vgg16 import VGG16, preprocess_input
+from tensorflow.keras.applications.nasnet import NASNetLarge, preprocess_input
 from tf_explain.core.grad_cam import GradCAM
 
 import PIL
@@ -18,18 +18,21 @@ from argparse import ArgumentParser
 import glob
 import os
 
-#Select a model to use, in this case VGG16
-model = VGG16(weights='imagenet', include_top=True, input_tensor=None, input_shape=None, pooling=None, classes=1000)
+model = NASNetLarge(weights='imagenet', include_top=True)
 #Check with 'print(model.summary())', in this case it is "block5_conv3"
-last_conv_layer_name = "block5_conv3"
+last_conv_layer_name = "normal_concat_18"
 #Must include layers between last convolutional layer and prediction layer
 #Layer names can be found through 'print(model.summary())'
-classifier_layer_names = ["block5_pool", "flatten", "fc1", "fc2", "predictions"]
+classifier_layer_names = [
+    "activation_188",
+    "global_average_pooling2d",
+    "predictions"
+]
 
 #This function is called from 'make_gradcam_heatmap'
 #Takes iaage_path from 'get_command_line_arguments', turns into it an array
 def get_img_array(img_path, size):
-    img = tensorflow.keras.preprocessing.image.load_img(img_path, target_size=(224, 224))
+    img = tensorflow.keras.preprocessing.image.load_img(img_path, target_size=(331, 331))
     # `array` is a float32 Numpy array
     array = tensorflow.keras.preprocessing.image.img_to_array(img)
     # We add a dimension to transform our array into a "batch"
